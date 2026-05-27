@@ -27,3 +27,8 @@ The few most prominent examples are:
 7. [Models examples](https://github.com/lifelonglab/pyCLAD/tree/main/examples/models) - This directory contains multiple
    examples of how to use the models available in pyCLAD. Each example is a standalone script that demonstrates how to
    use a specific model with a specific strategy and dataset.
+8. [Explainability Drift Example](https://github.com/lifelonglab/pyCLAD/blob/main/examples/explainability_drift_example.py) -
+   This example demonstrates how to use `pyclad.explainability` callbacks to track feature-level concept drift in a
+   Concept-Incremental scenario with Replay strategy. Two synthetically generated datasets are compared side by side
+ one with rotating signal features (drift) and one with stable signal features (no drift) using
+   `DriftMetricsCallback`, `WassersteinDriftCallback`, and `FeatureImportanceHeatmap`.

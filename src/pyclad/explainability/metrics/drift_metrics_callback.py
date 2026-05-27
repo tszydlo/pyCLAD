@@ -58,4 +58,4 @@ class DriftMetricsCallback(Callback):
             "churn": soft_churn,
             "expected_drift": expected,
         }
-        print(f"    [drift {prev_name}→{name}] cos={cos_sim:.3f}  churn={soft_churn:.3f}  gt={expected}")
+        print(f"    [drift {prev_name}->{name}] cos={cos_sim:.3f}  churn={soft_churn:.3f}  gt={expected}")
