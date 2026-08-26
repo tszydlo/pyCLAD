@@ -29,10 +29,13 @@ class OpsSatDataset(ConceptsDataset):
     def __init__(
         self,
         channel: OPS_SAT_CHANNELS_TYPE = "CADC0874",
+        includes_anomaly: bool = False,
         data_dir: Optional[Union[str, Path]] = None,
     ):
         """
         :param channel: The telemetry channel identifier.
+        :param includes_anomaly: If True, keep anomaly-labeled rows in the training set. If False (default),
+            exclude anomaly-labeled rows so training data contains only normal samples.
         :param data_dir: Directory containing the processed train/test CSV files.
         """
         if data_dir is None:
@@ -63,6 +66,10 @@ class OpsSatDataset(ConceptsDataset):
             train_df.insert(0, "concept_id", np.arange(len(train_df)))
         if "label" not in train_df.columns:
             train_df.insert(2, "label", 0)
+
+        if not includes_anomaly:
+            train_df = train_df[train_df["label"] == 0].reset_index(drop=True)
+            train_df["concept_id"] = np.arange(len(train_df))
 
         if "concept_id" not in test_df.columns:
             test_df.insert(0, "concept_id", 0)

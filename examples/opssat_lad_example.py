@@ -48,7 +48,8 @@ def run_auc_benchmark():
 
     for ch in CHANNELS:
         t0 = time.time()
-        dataset = OpsSatDataset(channel=ch)
+        dataset = OpsSatDataset(channel=ch, includes_anomaly=True)
+        print(f"Dataset info: {dataset.info()}")
         model = IsolationForestAdapter(contamination=0.1, n_estimators=100, random_state=SEED)
         strategy = CumulativeStrategy(model=model)
         tracker = AucTrackerCallback()

@@ -81,8 +81,9 @@ def generate_ops_sat_concepts(
     ch_df = ch_df.dropna(subset=feature_cols).copy()
 
     # Train: nominal segments only
-    train_rows_raw = ch_df[(ch_df["train"] == 1) & (ch_df["anomaly"] == 0)]
+    train_rows_raw = ch_df[(ch_df["train"] == 1)]# & (ch_df["anomaly"] == 0)]
     train_X = train_rows_raw[feature_cols].values.astype(np.float64)
+    train_labels = train_rows_raw["anomaly"].values.astype(int)
 
     if len(train_X) == 0:
         raise ValueError(f"No nominal training data for channel {channel}")
@@ -92,7 +93,7 @@ def generate_ops_sat_concepts(
         row_dict = {
             "concept_id": i,
             "concept_name": f"{channel}_train_{i:04d}",
-            "label": 0,
+            "label": int(train_labels[i]),
         }
         for f_idx, f in enumerate(feature_cols):
             row_dict[f] = float(train_X[i, f_idx])
@@ -165,7 +166,12 @@ def process_and_save_all_channels(
         train_df.to_csv(output_dir / f"{ch}_train.csv", index=False)
         test_df.to_csv(output_dir / f"{ch}_test.csv", index=False)
         stats[ch] = (len(train_df), len(test_df))
-        print(f"Channel {ch:<10} -> Train Concepts: {len(train_df):>3} | Test Samples: {len(test_df):>3}")
+        train_normal = int((train_df["label"] == 0).sum())
+        train_anomaly = int((train_df["label"] == 1).sum())
+        print(
+            f"Channel {ch:<10} -> Train Concepts: {len(train_df):>3} "
+            f"(Normal: {train_normal:>3}, Anomaly: {train_anomaly:>3}) | Test Samples: {len(test_df):>3}"
+        )
     return stats
 
 
