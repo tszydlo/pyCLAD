@@ -1,6 +1,8 @@
+import math
 import random
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
@@ -27,7 +29,7 @@ CHANNELS = [
 ]
 
 
-class AucTrackerCallback(Callback):
+class TrackerCallback(Callback):
     """Callback to record step-by-step test ROC-AUC scores."""
 
     def __init__(self):
@@ -38,6 +40,24 @@ class AucTrackerCallback(Callback):
         self.auc_history.append(auc)
 
 
+def plot_auc_histories(auc_histories):
+    ncols = 3
+    nrows = math.ceil(len(auc_histories) / ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5 * ncols, 3.5 * nrows), squeeze=False)
+
+    for ax, (ch, history) in zip(axes.flat, auc_histories.items()):
+        ax.plot(history)
+        ax.set_title(ch)
+        ax.set_xlabel("Evaluation step")
+        ax.set_ylabel("ROC-AUC")
+
+    for ax in axes.flat[len(auc_histories):]:
+        ax.axis("off")
+
+    fig.tight_layout()
+    plt.show()
+
+
 def run_auc_benchmark():
     print("=" * 68)
     print(f"{'Channel':<12} | {'Concepts':<10} | {'CA_AUC':<10} | {'Final_AUC':<10} | {'Time (s)':<8}")
@@ -45,6 +65,7 @@ def run_auc_benchmark():
 
     all_ca_auc = []
     all_final_auc = []
+    auc_histories = {}
 
     for ch in CHANNELS:
         t0 = time.time()
@@ -52,7 +73,7 @@ def run_auc_benchmark():
         print(f"Dataset info: {dataset.info()}")
         model = IsolationForestAdapter(contamination=0.1, n_estimators=100, random_state=SEED)
         strategy = CumulativeStrategy(model=model)
-        tracker = AucTrackerCallback()
+        tracker = TrackerCallback()
 
         scenario = ConceptIncrementalScenario(
             dataset=dataset,
@@ -60,6 +81,7 @@ def run_auc_benchmark():
             callbacks=[tracker],
         )
         scenario.run()
+        auc_histories[ch] = tracker.auc_history
 
         elapsed = round(time.time() - t0, 2)
         ca_auc = round(float(np.mean(tracker.auc_history)), 4)
@@ -73,6 +95,8 @@ def run_auc_benchmark():
     print("=" * 68)
     print(f"Mean CA_AUC across channels: {np.mean(all_ca_auc):.4f}")
     print(f"Mean Final_AUC across channels: {np.mean(all_final_auc):.4f}")
+
+    plot_auc_histories(auc_histories)
 
 
 if __name__ == "__main__":
