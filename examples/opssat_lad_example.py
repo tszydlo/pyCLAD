@@ -64,7 +64,7 @@ def plot_metric_histories(metric_histories):
     plt.show()
 
 
-def run_auc_benchmark():
+def run_auc_benchmark(includes_anomaly: bool = False):
     print("=" * 68)
     print(f"{'Channel':<12} | {'Concepts':<10} | {'CA_AUC':<10} | {'Final_AUC':<10} | {'Time (s)':<8}")
     print("=" * 68)
@@ -75,7 +75,7 @@ def run_auc_benchmark():
 
     for ch in CHANNELS:
         t0 = time.time()
-        dataset = OpsSatDataset(channel=ch, includes_anomaly=False)
+        dataset = OpsSatDataset(channel=ch, includes_anomaly=includes_anomaly)
         print(f"Dataset info: {dataset.info()}")
         model = IsolationForestAdapter(contamination=0.1, n_estimators=100, random_state=SEED)
         strategy = CumulativeStrategy(model=model)
@@ -110,4 +110,8 @@ def run_auc_benchmark():
 
 
 if __name__ == "__main__":
-    run_auc_benchmark()
+    #anomaly data included in the training dataset
+    run_auc_benchmark(False)
+
+    #anomaly data not included in the training dataset
+    run_auc_benchmark(True)
